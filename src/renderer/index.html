@@ -1,0 +1,163 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; img-src 'self' data:; style-src 'self' 'unsafe-inline'; script-src 'self'" />
+  <title>Riptide</title>
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <header class="titlebar">
+    <div class="brand">
+      <svg class="logo" viewBox="0 0 32 32" aria-hidden="true">
+        <defs><linearGradient id="lg" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#3ee6c4"/><stop offset="1" stop-color="#7b6cff"/></linearGradient></defs>
+        <rect width="32" height="32" rx="9" fill="url(#lg)"/>
+        <path d="M6 19c3-4 6-4 9 0s6 4 11-2" stroke="#0b0d12" stroke-width="2.6" fill="none" stroke-linecap="round"/>
+        <path d="M6 13c3-4 6-4 9 0s6 4 11-2" stroke="#0b0d12" stroke-opacity=".45" stroke-width="2.6" fill="none" stroke-linecap="round"/>
+      </svg>
+      <span>Riptide</span>
+    </div>
+    <div class="global-speed">
+      <span class="chip down"><i data-icon="arrowDown"></i><b id="g-down">0 B/s</b></span>
+      <span class="chip up"><i data-icon="arrowUp"></i><b id="g-up">0 B/s</b></span>
+    </div>
+  </header>
+
+  <div class="shell">
+    <aside class="sidebar">
+      <nav class="filters" id="filters">
+        <button class="filter active" data-filter="all"><i data-icon="layers"></i><span>All</span><em id="c-all">0</em></button>
+        <button class="filter" data-filter="active"><i data-icon="arrowDown"></i><span>Downloading</span><em id="c-active">0</em></button>
+        <button class="filter" data-filter="seeding"><i data-icon="arrowUp"></i><span>Seeding</span><em id="c-seeding">0</em></button>
+        <button class="filter" data-filter="done"><i data-icon="check"></i><span>Completed</span><em id="c-done">0</em></button>
+        <button class="filter" data-filter="stopped"><i data-icon="pause"></i><span>Paused</span><em id="c-stopped">0</em></button>
+      </nav>
+
+      <div class="sidebar-bottom">
+        <div class="graph-card">
+          <div class="graph-head"><span>Throughput</span><span class="muted" id="g-peak">peak 0 B/s</span></div>
+          <canvas id="graph" width="440" height="160"></canvas>
+          <div class="legend"><span><i class="dot down"></i>Down</span><span><i class="dot up"></i>Up</span></div>
+        </div>
+        <div class="net">
+          <div><span class="muted">Port</span><b id="n-port">—</b></div>
+          <div><span class="muted">DHT nodes</span><b id="n-dht">0</b></div>
+          <div><span class="muted">Peers</span><b id="n-peers">0</b></div>
+        </div>
+        <button class="ghost settings-btn" id="open-settings"><i data-icon="settings"></i>Settings</button>
+      </div>
+    </aside>
+
+    <main class="main">
+      <form class="addbar" id="addbar" autocomplete="off">
+        <div class="addfield">
+          <i data-icon="magnet"></i>
+          <input id="magnet" spellcheck="false" placeholder="Paste a magnet link or info hash — or drop .torrent files anywhere" />
+          <kbd>Ctrl V</kbd>
+        </div>
+        <button type="submit" class="primary"><i data-icon="plus"></i>Add</button>
+        <button type="button" class="secondary" id="open-file"><i data-icon="file"></i>Open .torrent</button>
+      </form>
+
+      <div class="clip-banner hidden" id="clip-banner">
+        <i data-icon="magnet"></i>
+        <span>Magnet link found on your clipboard: <b id="clip-name"></b></span>
+        <button class="primary small" id="clip-add">Add it</button>
+        <button class="ghost small" id="clip-dismiss">Dismiss</button>
+      </div>
+
+      <div class="toolbar">
+        <h1 id="view-title">All transfers</h1>
+        <div class="search"><i data-icon="search"></i><input id="search" placeholder="Filter by name" /></div>
+      </div>
+
+      <section class="list" id="list"></section>
+
+      <div class="empty" id="empty">
+        <svg viewBox="0 0 220 120" class="empty-art" aria-hidden="true">
+          <defs><linearGradient id="eg" x1="0" x2="1"><stop offset="0" stop-color="#3ee6c4"/><stop offset="1" stop-color="#7b6cff"/></linearGradient></defs>
+          <path d="M10 70c25-30 50-30 75 0s50 30 75 0 40-25 50-10" stroke="url(#eg)" stroke-width="6" fill="none" stroke-linecap="round"/>
+          <path d="M10 92c25-30 50-30 75 0s50 30 75 0 40-25 50-10" stroke="url(#eg)" stroke-opacity=".35" stroke-width="6" fill="none" stroke-linecap="round"/>
+          <path d="M10 48c25-30 50-30 75 0s50 30 75 0 40-25 50-10" stroke="url(#eg)" stroke-opacity=".15" stroke-width="6" fill="none" stroke-linecap="round"/>
+        </svg>
+        <h2>Nothing in the queue</h2>
+        <p>Paste a magnet link above, drop a <code>.torrent</code> file here, or click a magnet link in your browser.</p>
+      </div>
+    </main>
+
+    <aside class="drawer" id="drawer" aria-hidden="true">
+      <div class="drawer-head">
+        <div>
+          <div class="eyebrow" id="d-status">Downloading</div>
+          <h2 id="d-name">—</h2>
+        </div>
+        <button class="icon-btn" id="d-close" title="Close"><i data-icon="x"></i></button>
+      </div>
+      <div class="ring-wrap">
+        <svg viewBox="0 0 120 120" class="ring">
+          <defs><linearGradient id="rg" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#3ee6c4"/><stop offset="1" stop-color="#7b6cff"/></linearGradient></defs>
+          <circle cx="60" cy="60" r="52" class="ring-bg"/>
+          <circle cx="60" cy="60" r="52" class="ring-fg" id="d-ring"/>
+        </svg>
+        <div class="ring-label"><b id="d-pct">0%</b><span id="d-eta">—</span></div>
+      </div>
+      <div class="stats" id="d-stats"></div>
+      <div class="drawer-actions">
+        <button class="secondary" id="d-toggle"><i data-icon="pause"></i>Pause</button>
+        <button class="secondary" id="d-folder"><i data-icon="folder"></i>Show in folder</button>
+        <button class="secondary" id="d-copy"><i data-icon="link"></i>Copy magnet</button>
+      </div>
+      <h3 class="files-head">Files <span class="muted" id="d-filecount"></span></h3>
+      <div class="files" id="d-files"></div>
+    </aside>
+  </div>
+
+  <div class="drop-overlay" id="drop"><div><i data-icon="download"></i><p>Drop to start downloading</p></div></div>
+
+  <dialog id="settings" class="modal">
+    <form method="dialog" id="settings-form">
+      <h2>Settings</h2>
+      <label class="field">
+        <span>Download folder</span>
+        <div class="row"><input id="s-path" readonly /><button type="button" class="secondary" id="s-browse">Browse</button></div>
+      </label>
+      <div class="grid2">
+        <label class="field"><span>Download limit (KB/s, 0 = unlimited)</span><input type="number" min="0" id="s-down" /></label>
+        <label class="field"><span>Upload limit (KB/s, 0 = unlimited)</span><input type="number" min="0" id="s-up" /></label>
+        <label class="field"><span>Max peers per torrent</span><input type="number" min="10" max="1000" id="s-conns" /></label>
+        <label class="field"><span>Piece order</span>
+          <select id="s-strategy"><option value="rarest">Rarest first (fastest)</option><option value="sequential">Sequential (stream while downloading)</option></select>
+        </label>
+      </div>
+      <label class="toggle"><input type="checkbox" id="s-trackers" /><span></span>Boost with public tracker list <em class="muted">(more peers, faster starts)</em></label>
+      <label class="toggle"><input type="checkbox" id="s-seed" /><span></span>Keep seeding after download finishes</label>
+      <label class="toggle"><input type="checkbox" id="s-notify" /><span></span>Desktop notification when a download finishes</label>
+      <div class="default-row">
+        <span id="s-default-label">Open magnet links with Riptide</span>
+        <button type="button" class="secondary small" id="s-default">Make default</button>
+      </div>
+      <p class="muted small-print">Listening on port <b id="s-port"></b> over TCP + uTP with UPnP / NAT-PMP port mapping, DHT, PEX and local peer discovery. Peer and order changes apply instantly; tracker boost applies to newly added torrents.</p>
+      <div class="modal-actions">
+        <button value="cancel" class="ghost">Cancel</button>
+        <button value="save" class="primary" id="s-save">Save</button>
+      </div>
+    </form>
+  </dialog>
+
+  <dialog id="confirm" class="modal small">
+    <form method="dialog">
+      <h2>Remove transfer?</h2>
+      <p class="muted" id="confirm-name"></p>
+      <label class="toggle"><input type="checkbox" id="confirm-delete" /><span></span>Also delete downloaded files</label>
+      <div class="modal-actions">
+        <button value="cancel" class="ghost">Cancel</button>
+        <button value="ok" class="danger">Remove</button>
+      </div>
+    </form>
+  </dialog>
+
+  <div class="toasts" id="toasts"></div>
+  <script src="icons.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>

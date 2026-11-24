@@ -1,0 +1,71 @@
+{
+  "name": "riptide",
+  "version": "1.0.0",
+  "description": "A fast, beautiful magnet & torrent downloader for desktop.",
+  "main": "src/main.js",
+  "scripts": {
+    "start": "electron .",
+    "dist": "electron-builder --win",
+    "pack": "electron-builder --win --dir"
+  },
+  "author": "giorgosrsss",
+  "license": "MIT",
+  "type": "commonjs",
+  "dependencies": {
+    "parse-torrent": "^11.0.24",
+    "webtorrent": "^3.0.21"
+  },
+  "devDependencies": {
+    "electron": "^45.4.1",
+    "electron-builder": "^26.18.0"
+  },
+  "allowScripts": {
+    "ip-set": false,
+    "bufferutil": false,
+    "utf-8-validate": false,
+    "electron-winstaller@5.4.0": true,
+    "node-datachannel@0.32.3": true,
+    "utp-native@2.5.3": true
+  },
+  "productName": "Riptide",
+  "build": {
+    "appId": "com.giorgosrsss.riptide",
+    "productName": "Riptide",
+    "directories": {
+      "output": "dist"
+    },
+    "files": [
+      "src/**/*",
+      "package.json"
+    ],
+    "asarUnpack": [
+      "**/*.node"
+    ],
+    "protocols": [
+      {
+        "name": "Magnet link",
+        "schemes": [
+          "magnet"
+        ]
+      }
+    ],
+    "fileAssociations": [
+      {
+        "ext": "torrent",
+        "name": "Torrent file",
+        "role": "Viewer"
+      }
+    ],
+    "win": {
+      "target": [
+        "nsis",
+        "portable"
+      ],
+      "icon": "build/icon.png"
+    },
+    "nsis": {
+      "oneClick": false,
+      "allowToChangeInstallationDirectory": true
+    }
+  }
+}
